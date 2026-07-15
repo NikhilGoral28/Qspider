@@ -12,7 +12,7 @@ import re
 
 text = "Hello    NLP"
 
-cleaned = re.sub(r'\s','',text)
+cleaned = re.sub(r'\s','',text).strip()
 print(cleaned)
 
 
