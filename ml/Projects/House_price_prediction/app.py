@@ -1,0 +1,106 @@
+# import joblib
+# import streamlit as st
+# import pandas as pd
+
+
+
+# model = joblib.load('notebook/rf_model.joblib')
+# encoder = joblib.load("notebook/location_encoder.joblib")
+
+# st.title("House Price Predication 🏠")
+
+# total_sqft = st.number_input("Total sqft", min_value=100.0)
+# bath = st.number_input("Bathrooms", min_value=1)
+# bhk = st.number_input("BHK", min_value=1)
+
+
+
+# # User enters location name
+# location = st.text_input("Enter Location") 
+
+
+# if st.button("Predict"):
+
+#     # Check if location exists in encoder
+#     if location in encoder.classes_:
+
+#         # Convert location name to encoded number
+#         encoded_loc = encoder.transform([location])[0]
+
+#         input_data = pd.DataFrame(
+#             [[total_sqft, bath, bhk, encoded_loc]],
+#             columns=[
+#                 "total_sqft",
+#                 "bath",
+#                 "bhk",
+#                 "encoded_loc"
+#             ]
+#         )
+
+#         prediction = model.predict(input_data)[0]
+
+#         st.success(f"Estimated Price: ₹ {prediction:.2f} Lakhs")
+
+#     else:
+#         st.error("Location not found. Please enter a valid location.")
+
+
+
+
+import joblib
+import streamlit as st
+import pandas as pd
+
+
+st.set_page_config(page_icon="🏠",
+                   page_title="House Price Prediction",layout='wide')
+
+
+with open("notebook/rf_model.joblib",'rb') as file:
+    model = joblib.load(file)
+
+
+
+df = pd.read_csv('dataset\Cleaned_bangloreHousePrice_df.csv')
+
+with st.sidebar:
+    st.title("House Price Prediction App")
+    st.image('House_logo.png',width=300)
+
+    
+st.header("House Price Prediction")
+st.image('House_logo.png')    
+
+
+with st.container(border=True):
+    col1,col2 = st.columns(2)
+
+    with col1:
+        location = st.selectbox("Location : ",options=df['location'].unique())
+        sqft = st.number_input("Sq. ft ", min_value=300)
+
+    with col2:
+        bath = st.selectbox("Bath",options=sorted(df['bath'].unique()))
+        bhk = st.selectbox("BHK's ", options=sorted(df['bhk'].unique()))
+
+    
+
+
+def get_encoded_loc(location):
+
+    for loc,encoded in zip(df["location"],df['encoded_loc']):
+        if location == loc:
+            return encoded
+        
+
+encoded_loc = get_encoded_loc(location)
+
+
+if st.button("Predict"):
+    inp_data = [[sqft,bath,bhk,encoded_loc]]
+    pred = model.predict(inp_data)
+    pred = float(f"{pred[0]:2f}")
+    st.title(f"Preditcted Price: Rs. {pred*100000}")
+
+
+
