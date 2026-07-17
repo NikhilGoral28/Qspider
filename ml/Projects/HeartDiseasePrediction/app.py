@@ -19,7 +19,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(
     BASE_DIR,
     "notebook",
-    "log_model.joblib"
+    "Log_model.joblib"
 )
 
 
