@@ -38,7 +38,7 @@ DATA_PATH = os.path.join(
 
 LOGO_PATH = os.path.join(
     BASE_DIR,
-    "House_logo.png"
+    "house_logo.png"
 )
 
 
