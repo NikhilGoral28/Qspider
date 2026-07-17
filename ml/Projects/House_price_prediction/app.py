@@ -1,89 +1,105 @@
+
 import os
 import joblib
 import streamlit as st
 import pandas as pd
 
 
-# -----------------------------
+# -----------------------------------
 # Page Configuration
-# -----------------------------
+# -----------------------------------
 st.set_page_config(
-    page_icon="🏠",
     page_title="House Price Prediction",
+    page_icon="🏠",
     layout="wide"
 )
 
 
-# -----------------------------
-# Base Path
-# -----------------------------
+# -----------------------------------
+# Base Directory
+# -----------------------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-# -----------------------------
-# Load Model
-# -----------------------------
+# -----------------------------------
+# File Paths
+# -----------------------------------
 MODEL_PATH = os.path.join(
     BASE_DIR,
     "notebook",
     "rf_model.joblib"
 )
 
-try:
-    model = joblib.load(MODEL_PATH)
-
-except FileNotFoundError:
-    st.error(f"Model file not found: {MODEL_PATH}")
-    st.stop()
-
-
-# -----------------------------
-# Load Dataset
-# -----------------------------
-DATASET_PATH = os.path.join(
+DATA_PATH = os.path.join(
     BASE_DIR,
     "dataset",
     "Cleaned_bangloreHousePrice_df.csv"
 )
 
-try:
-    df = pd.read_csv(DATASET_PATH)
-
-except FileNotFoundError:
-    st.error(f"Dataset file not found: {DATASET_PATH}")
-    st.stop()
-
-
-# -----------------------------
-# Logo Path
-# -----------------------------
 LOGO_PATH = os.path.join(
     BASE_DIR,
     "House_logo.png"
 )
 
 
-# -----------------------------
+# -----------------------------------
+# Load Model
+# -----------------------------------
+try:
+    model = joblib.load(MODEL_PATH)
+
+except Exception as e:
+    st.error("Unable to load model")
+    st.write(e)
+    st.stop()
+
+
+
+# -----------------------------------
+# Load Dataset
+# -----------------------------------
+try:
+    df = pd.read_csv(DATA_PATH)
+
+except Exception as e:
+    st.error("Unable to load dataset")
+    st.write(e)
+    st.stop()
+
+
+
+# -----------------------------------
 # Sidebar
-# -----------------------------
+# -----------------------------------
 with st.sidebar:
 
     st.title("🏠 House Price Prediction")
 
     if os.path.exists(LOGO_PATH):
-        st.image(LOGO_PATH, width=250)
+        st.image(
+            LOGO_PATH,
+            width=250
+        )
 
 
-# -----------------------------
-# Main UI
-# -----------------------------
-st.header("House Price Prediction 🏠")
+
+# -----------------------------------
+# Main Page
+# -----------------------------------
+st.header("🏠 Bangalore House Price Prediction")
 
 
 if os.path.exists(LOGO_PATH):
-    st.image(LOGO_PATH, width=300)
+    st.image(
+        LOGO_PATH,
+        width=300
+    )
 
 
+
+# -----------------------------------
+# User Inputs
+# -----------------------------------
 with st.container(border=True):
 
     col1, col2 = st.columns(2)
@@ -93,35 +109,36 @@ with st.container(border=True):
 
         location = st.selectbox(
             "Location",
-            options=sorted(df["location"].unique())
+            sorted(df["location"].unique())
         )
 
 
-        sqft = st.number_input(
+        total_sqft = st.number_input(
             "Total Sqft",
             min_value=300,
             value=1000
         )
 
 
+
     with col2:
 
         bath = st.selectbox(
             "Bathrooms",
-            options=sorted(df["bath"].unique())
+            sorted(df["bath"].unique())
         )
 
 
         bhk = st.selectbox(
             "BHK",
-            options=sorted(df["bhk"].unique())
+            sorted(df["bhk"].unique())
         )
 
 
 
-# -----------------------------
-# Encode Location
-# -----------------------------
+# -----------------------------------
+# Location Encoding
+# -----------------------------------
 def get_encoded_location(location):
 
     result = df.loc[
@@ -136,10 +153,11 @@ def get_encoded_location(location):
 
 
 
-# -----------------------------
+# -----------------------------------
 # Prediction
-# -----------------------------
+# -----------------------------------
 if st.button("Predict Price"):
+
 
     encoded_loc = get_encoded_location(location)
 
@@ -147,20 +165,25 @@ if st.button("Predict Price"):
     if encoded_loc is None:
 
         st.error(
-            "Location encoding not found."
+            "Location encoding not found"
         )
+
 
     else:
 
+
+        # IMPORTANT:
+        # Feature names must match training data exactly
+
         input_data = pd.DataFrame(
             [[
-                sqft,
+                total_sqft,
                 bath,
                 bhk,
                 encoded_loc
             ]],
             columns=[
-                "sqft",
+                "total_sqft",
                 "bath",
                 "bhk",
                 "encoded_loc"
@@ -168,12 +191,26 @@ if st.button("Predict Price"):
         )
 
 
-        prediction = model.predict(input_data)[0]
+        try:
+
+            prediction = model.predict(
+                input_data
+            )[0]
 
 
-        price = prediction * 100000
+            price = prediction * 100000
 
 
-        st.success(
-            f"Estimated Price: ₹ {price:,.2f}"
-        )
+            st.success(
+                f"Estimated Price: ₹ {price:,.2f}"
+            )
+
+
+        except Exception as e:
+
+            st.error(
+                "Prediction failed"
+            )
+
+            st.write(e)
+
