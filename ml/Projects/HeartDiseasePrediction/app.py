@@ -1,82 +1,255 @@
 import streamlit as st
 import pandas as pd
 import joblib
+import os
 
 
 st.set_page_config(
-    page_icon='❤️',
+    page_icon="❤️",
     page_title="Heart Disease Prediction",
-    layout='wide'
+    layout="wide"
 )
 
-with open('notebook/log_model.joblib','rb') as file:
-    model = joblib.load(file)
+
+# Get current project directory
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+# Model path
+MODEL_PATH = os.path.join(
+    BASE_DIR,
+    "notebook",
+    "log_model.joblib"
+)
+
+
+# Dataset path
+DATA_PATH = os.path.join(
+    BASE_DIR,
+    "data",
+    "cleaned_data.csv"
+)
+
+
+# Image paths
+HEART_LOW = os.path.join(
+    BASE_DIR,
+    "static",
+    "heart2.jpeg"
+)
+
+HEART_HIGH = os.path.join(
+    BASE_DIR,
+    "static",
+    "heart1.jpeg"
+)
+
+
+# Load model
+try:
+    model = joblib.load(MODEL_PATH)
+except Exception as e:
+    st.error(f"Model loading failed: {e}")
+    st.stop()
 
 
 with st.sidebar:
-    st.title("HEART DISEASE PREDICTION")
+    st.title("❤️ HEART DISEASE PREDICTION")
 
 
-df = pd.read_csv("data/cleaned_data.csv")
+# Load data (optional)
+try:
+    df = pd.read_csv(DATA_PATH)
+except Exception:
+    df = None
+
 
 with st.container(border=True):
-    col1,col2 = st.columns(2)
+
+    col1, col2 = st.columns(2)
+
 
     with col1:
-        age = st.number_input("AGE ",min_value=1,
-                              max_value=100,step = 5)
-        gender = st.radio("GENDER", options=['Male', "Female"],
-                          horizontal=True)
-        
-        gender = 1 if gender == 'Male' else 0
-        d = {"Typical angina":0, "Antypical angina":1,
-             "non-anginal pain":2, "Asymptotic":3}
-        chest_pain_type = st.selectbox("CHEST PAIN TYPE",
-                                       options=d.keys())
-        chest_pain_type=d[chest_pain_type]
 
-        resting_bp = st.number_input("RESTING BP", min_value=50,max_value=250,step=10)
+        age = st.number_input(
+            "AGE",
+            min_value=1,
+            max_value=100,
+            step=1
+        )
 
-        cholestrol = st.number_input("CHOLESTOL",min_value=50,max_value=600,step=20)
 
-        fbs = st.radio("FASTING BLOOD SUGAR",options=['Yes','No'])
-        fbs = 1 if fbs == 'Yes' else 0
+        gender = st.radio(
+            "GENDER",
+            options=["Male", "Female"],
+            horizontal=True
+        )
+
+        gender = 1 if gender == "Male" else 0
+
+
+        chest_dict = {
+            "Typical angina": 0,
+            "Atypical angina": 1,
+            "Non-anginal pain": 2,
+            "Asymptomatic": 3
+        }
+
+        chest_pain = st.selectbox(
+            "CHEST PAIN TYPE",
+            options=list(chest_dict.keys())
+        )
+
+        chest_pain = chest_dict[chest_pain]
+
+
+        resting_bp = st.number_input(
+            "RESTING BP",
+            min_value=50,
+            max_value=250,
+            step=10
+        )
+
+
+        cholesterol = st.number_input(
+            "CHOLESTEROL",
+            min_value=50,
+            max_value=600,
+            step=10
+        )
+
+
+        fbs = st.radio(
+            "FASTING BLOOD SUGAR",
+            options=["Yes", "No"]
+        )
+
+        fbs = 1 if fbs == "Yes" else 0
+
 
 
     with col2:
-        d1 = {"normal":0,'having ST-T wave abnormality':1,
-              "left ventricular hypertropy":2}
-        
-        restecg = st.selectbox("RESTING ECG",options=d1.keys())
-        restecg = d1[restecg]
 
-        max_heart = st.number_input("Maximum_heart_Rate", min_value=50,max_value=250,step=5)
+        restecg_dict = {
+            "Normal": 0,
+            "ST-T wave abnormality": 1,
+            "Left ventricular hypertrophy": 2
+        }
 
-        exang = st.radio("Excercise Induces Angina", options=['Yes',"No"])
-        exang = 1 if exang == 'Yes' else 0
 
-        oldpeak = st.number_input('OLDPEAK',min_value=0.0,max_value=10.0,step=1.0)
+        restecg = st.selectbox(
+            "RESTING ECG",
+            options=list(restecg_dict.keys())
+        )
 
-        d2 = {"upsloping":0,"flat":1,"downsloping":2}
-        slope = st.selectbox("SLOPE",options=d2)
-        slope = d2[slope]
+        restecg = restecg_dict[restecg]
 
-        num_vessels = st.selectbox("NUMBER OF MAJOR VESSELS",options=[0,1,2,3])
 
-        d3 = {"Normal":1,"Fixed defect":2,"reversable defect":3}
-        thal = st.selectbox("THAL",options=d3.keys())
-        thal = d3[thal]
+        max_heart = st.number_input(
+            "MAXIMUM HEART RATE",
+            min_value=50,
+            max_value=250,
+            step=5
+        )
+
+
+        exang = st.radio(
+            "EXERCISE INDUCED ANGINA",
+            options=["Yes", "No"]
+        )
+
+        exang = 1 if exang == "Yes" else 0
+
+
+
+        oldpeak = st.number_input(
+            "OLDPEAK",
+            min_value=0.0,
+            max_value=10.0,
+            step=0.1
+        )
+
+
+        slope_dict = {
+            "Upsloping": 0,
+            "Flat": 1,
+            "Downsloping": 2
+        }
+
+
+        slope = st.selectbox(
+            "SLOPE",
+            options=list(slope_dict.keys())
+        )
+
+        slope = slope_dict[slope]
+
+
+        num_vessels = st.selectbox(
+            "NUMBER OF MAJOR VESSELS",
+            options=[0,1,2,3]
+        )
+
+
+        thal_dict = {
+            "Normal": 1,
+            "Fixed defect": 2,
+            "Reversible defect": 3
+        }
+
+
+        thal = st.selectbox(
+            "THAL",
+            options=list(thal_dict.keys())
+        )
+
+        thal = thal_dict[thal]
+
+
 
     if st.button("PREDICT"):
-        data = [[age,gender,chest_pain_type,resting_bp,cholestrol,fbs,
-                 restecg,max_heart,exang,oldpeak,slope,num_vessels,thal]]
-        
-        pred = model.predict(data)[0]
 
-        if pred == 0:
-            st.subheader("LOW RISK OF HEART DISEASE")
-            st.image('static/heart2.jpeg', width=200)
+        input_data = [[
+            age,
+            gender,
+            chest_pain,
+            resting_bp,
+            cholesterol,
+            fbs,
+            restecg,
+            max_heart,
+            exang,
+            oldpeak,
+            slope,
+            num_vessels,
+            thal
+        ]]
+
+
+        prediction = model.predict(input_data)[0]
+
+
+        if prediction == 0:
+
+            st.subheader(
+                "🟢 LOW RISK OF HEART DISEASE"
+            )
+
+            if os.path.exists(HEART_LOW):
+                st.image(
+                    HEART_LOW,
+                    width=200
+                )
+
 
         else:
-            st.subheader("HIGH RISK OF HEART DISEASE")
-            st.image('static/heart1.jpeg',width=200)
+
+            st.subheader(
+                "🔴 HIGH RISK OF HEART DISEASE"
+            )
+
+            if os.path.exists(HEART_HIGH):
+                st.image(
+                    HEART_HIGH,
+                    width=200
+                )
