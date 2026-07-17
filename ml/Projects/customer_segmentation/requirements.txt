@@ -5,3 +5,4 @@ seaborn
 altair
 kneed
 joblib
+scikit-learn
