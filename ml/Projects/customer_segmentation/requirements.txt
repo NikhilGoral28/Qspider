@@ -4,3 +4,4 @@ numpy
 seaborn
 altair
 kneed
+joblib
