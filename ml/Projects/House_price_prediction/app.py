@@ -50,13 +50,18 @@
 import joblib
 import streamlit as st
 import pandas as pd
-
+import os
 
 st.set_page_config(page_icon="🏠",
                    page_title="House Price Prediction",layout='wide')
 
 
-with open("notebook/rf_model.joblib",'rb') as file:
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+model_path = os.path.join(BASE_DIR, "notebook", "log_model.joblib")
+
+with open(model_path, "rb") as file:
     model = joblib.load(file)
 
 
